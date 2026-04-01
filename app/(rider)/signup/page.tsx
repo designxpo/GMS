@@ -1,6 +1,6 @@
 import { getPublicEvents } from "@/lib/data/events";
 import RegistrationWizard from "@/components/registration/RegistrationWizard";
-import { BSV } from "@/types";
+import { BSV } from "@/types/company";
 
 interface Props { searchParams: { event?: string } }
 
