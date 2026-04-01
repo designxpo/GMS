@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getServerSession } from "@/lib/auth/session";
-import { CreditCard, ShoppingBag, Search, Filter, MoreHorizontal, CheckCircle2, TrendingUp, AlertCircle, IndianRupee } from "lucide-react";
+import { CreditCard, ShoppingBag, ShoppingCart, Search, Filter, MoreHorizontal, CheckCircle2, TrendingUp, AlertCircle, IndianRupee } from "lucide-react";
 
 export const metadata = { title: "Payments — BSV" };
 

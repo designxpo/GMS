@@ -183,7 +183,6 @@ export interface CheckInStats {
   awaiting: number;
 }
 
-export * from "./rider";
 
-// Company name constant for use in app
-export const BSV = "BSV";
+// rider.ts types are exported here
+export * from "./rider";
