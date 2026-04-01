@@ -1,0 +1,358 @@
+// Prisma schema for BSV platform
+// Add or adjust fields as needed for your app logic
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  users     User[]
+  events    Event[]
+  riders    Rider[]
+  horses    Horse[]
+  venues    Venue[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String
+  name           String?
+  hashedPassword String?
+  role           String
+  isActive       Boolean   @default(true)
+  tenant         Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId       String
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model Rider {
+  id               String          @id @default(uuid())
+  licenseNumber    String
+  firstName        String
+  lastName         String
+  email            String
+  phone            String?
+  dateOfBirth      DateTime?
+  gender           String?
+  nationality      String?
+  clubName         String?
+  feiId            String?
+  emergencyContact String?
+  emergencyPhone   String?
+  consentGiven     Boolean         @default(false)
+  consentDate      DateTime?
+  status           String          @default("ACTIVE")
+  tenant           Tenant          @relation(fields: [tenantId], references: [id])
+  tenantId         String
+  registrations    Registration[]
+  checkIns         CheckIn[]
+  vaccinations     Vaccination[]
+  accreditations   Accreditation[]
+  horses           RiderHorse[]
+  scheduleSlots    ScheduleSlot[]
+  documents        Document[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model Horse {
+  id            String         @id @default(uuid())
+  name          String
+  licenseNumber String?
+  feiId         String?
+  breed         String?
+  color         String?
+  gender        String?
+  dateOfBirth   DateTime?
+  ownerName     String?
+  status        String         @default("ACTIVE")
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  tenantId      String
+  vaccinations  Vaccination[]
+  riders        RiderHorse[]
+  scheduleSlots ScheduleSlot[]
+  checkIns      CheckIn[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model RiderHorse {
+  rider     Rider   @relation(fields: [riderId], references: [id])
+  riderId   String
+  horse     Horse   @relation(fields: [horseId], references: [id])
+  horseId   String
+  isPrimary Boolean @default(true)
+
+  @@id([riderId, horseId])
+}
+
+model Event {
+  id               String            @id @default(uuid())
+  name             String
+  slug             String?           @unique
+  description      String?
+  discipline       String?
+  startDate        DateTime
+  endDate          DateTime
+  venue            Venue?            @relation(fields: [venueId], references: [id])
+  venueId          String?
+  venueName        String?
+  status           String            @default("DRAFT")
+  isPublic         Boolean           @default(false)
+  clonedFromId     String?
+  draftData        Json?
+  tenant           Tenant            @relation(fields: [tenantId], references: [id])
+  tenantId         String
+  registrations    Registration[]
+  activities       EventActivity[]
+  checkIns         CheckIn[]
+  judgeAssignments JudgeAssignment[]
+  scheduleSlots    ScheduleSlot[]
+  accreditations   Accreditation[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  address   String?
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  rings     Ring[]
+  events    Event[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ring {
+  id            String         @id @default(uuid())
+  name          String
+  venue         Venue          @relation(fields: [venueId], references: [id])
+  venueId       String
+  scheduleSlots ScheduleSlot[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Registration {
+  id              String    @id @default(uuid())
+  event           Event     @relation(fields: [eventId], references: [id])
+  eventId         String
+  rider           Rider     @relation(fields: [riderId], references: [id])
+  riderId         String
+  horseId         String
+  eventActivityId String?
+  totalFee        Int       @default(0)
+  status          String    @default("DRAFT")
+  termsAccepted   Boolean   @default(false)
+  notes           String?
+  submittedAt     DateTime?
+  payments        Payment[]
+  tenantId        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  registration   Registration? @relation(fields: [registrationId], references: [id])
+  registrationId String?
+  amount         Int
+  status         String
+  tenantId       String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  tenantId   String
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  oldValues  Json?
+  newValues  Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model NotificationTemplate {
+  id               String            @id @default(uuid())
+  triggerKey       String            @unique
+  subject          String?
+  bodyEmail        String?
+  bodySms          String?
+  bodyWhatsapp     String?
+  isActive         Boolean           @default(true)
+  channels         String[]
+  notificationLogs NotificationLog[]
+}
+
+model NotificationLog {
+  id          String                @id @default(uuid())
+  tenantId    String
+  recipientId String
+  channel     String
+  subject     String?
+  body        String
+  status      String
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  template    NotificationTemplate? @relation(fields: [templateId], references: [id])
+  templateId  String?
+}
+
+model Activity {
+  id              String          @id @default(uuid())
+  name            String
+  description     String?
+  criteria        Json?
+  eventActivities EventActivity[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model EventActivity {
+  id               String            @id @default(uuid())
+  event            Event             @relation(fields: [eventId], references: [id])
+  eventId          String
+  activity         Activity          @relation(fields: [activityId], references: [id])
+  activityId       String
+  fee              Int
+  judgeAssignments JudgeAssignment[]
+  scores           Score[]
+}
+
+model JudgeAssignment {
+  id         String        @id @default(uuid())
+  event      Event         @relation(fields: [eventId], references: [id])
+  eventId    String
+  userId     String
+  activity   EventActivity @relation(fields: [activityId], references: [id])
+  activityId String
+  scores     Score[]
+}
+
+model CheckIn {
+  id         String   @id @default(uuid())
+  event      Event    @relation(fields: [eventId], references: [id])
+  eventId    String
+  rider      Rider    @relation(fields: [riderId], references: [id])
+  riderId    String
+  horse      Horse    @relation(fields: [horseId], references: [id])
+  horseId    String
+  qrToken    String   @unique
+  status     String   @default("PENDING")
+  docStatus  String   @default("PENDING")
+  scannedAt  DateTime?
+  scannedBy  String?
+  offlineSync Boolean  @default(false)
+  syncedAt   DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Vaccination {
+  id         String    @id @default(uuid())
+  rider      Rider?    @relation(fields: [riderId], references: [id])
+  riderId    String?
+  horse      Horse?    @relation(fields: [horseId], references: [id])
+  horseId    String?
+  vaccine    String
+  date       DateTime
+  expiryDate DateTime?
+  status     String?   @default("VERIFIED")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Accreditation {
+  id            String    @id @default(uuid())
+  status        String    @default("PENDING")
+  type          String
+  rider         Rider?    @relation(fields: [riderId], references: [id])
+  riderId       String?
+  event         Event?    @relation(fields: [eventId], references: [id])
+  eventId       String?
+  tenantId      String
+  accessZones   String[]
+  expiresAt     DateTime?
+  qrCode        String?   @unique
+  badgeNumber   String?   @unique
+  photoUrl      String?
+  notes         String?
+  issuedAt      DateTime?
+  revokedAt     DateTime?
+  revokedReason String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ScheduleSlot {
+  id          String   @id @default(uuid())
+  event       Event    @relation(fields: [eventId], references: [id])
+  eventId     String
+  ring        Ring?    @relation(fields: [ringId], references: [id])
+  ringId      String?
+  rider       Rider    @relation(fields: [riderId], references: [id])
+  riderId     String
+  horse       Horse    @relation(fields: [horseId], references: [id])
+  horseId     String
+  startTime   DateTime
+  endTime     DateTime
+  hasConflict Boolean  @default(false)
+  scores      Score[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Score {
+  id                String          @id @default(uuid())
+  scheduleSlot      ScheduleSlot    @relation(fields: [scheduleSlotId], references: [id])
+  scheduleSlotId    String
+  eventActivity     EventActivity   @relation(fields: [eventActivityId], references: [id])
+  eventActivityId   String
+  judgeAssignment   JudgeAssignment @relation(fields: [judgeAssignmentId], references: [id])
+  judgeAssignmentId String
+  criteriaScores    Json?
+  totalScore        Float
+  percentage        Float?
+  remarks           String?
+  isOfflineDraft    Boolean         @default(false)
+  submittedAt       DateTime?
+  submittedBy       String?
+  scoreHash         String?
+  isFlagged         Boolean         @default(false)
+  flagReason        String?
+  flagResolvedAt    DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([scheduleSlotId, judgeAssignmentId])
+}
+
+model Document {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  rider     Rider    @relation(fields: [riderId], references: [id])
+  riderId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
