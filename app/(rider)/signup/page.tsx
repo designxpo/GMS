@@ -1,6 +1,8 @@
 import { getPublicEvents } from "@/lib/data/events";
 import RegistrationWizard from "@/components/registration/RegistrationWizard";
 import { BSV } from "@/types/company";
+import { cookies } from "next/headers";
+
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +10,9 @@ export const dynamic = "force-dynamic";
 interface Props { searchParams: { event?: string } }
 
 export default async function RegistrationPage({ searchParams }: Props) {
+  cookies();
   const events = await getPublicEvents();
+
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
       <div className="text-center mb-8">
