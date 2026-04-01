@@ -6,6 +6,9 @@ import { getServerSession } from "@/lib/auth/session";
 import Sidebar from "@/components/layout/Sidebar";
 import TopBar from "@/components/layout/TopBar";
 
+export const dynamic = "force-dynamic";
+
+
 export default async function AdminLayout({
   children,
 }: {

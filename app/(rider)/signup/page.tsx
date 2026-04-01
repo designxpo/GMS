@@ -2,6 +2,9 @@ import { getPublicEvents } from "@/lib/data/events";
 import RegistrationWizard from "@/components/registration/RegistrationWizard";
 import { BSV } from "@/types/company";
 
+export const dynamic = "force-dynamic";
+
+
 interface Props { searchParams: { event?: string } }
 
 export default async function RegistrationPage({ searchParams }: Props) {
