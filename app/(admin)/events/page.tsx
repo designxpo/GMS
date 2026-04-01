@@ -37,7 +37,7 @@ export default async function EventsPage() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {events.map((ev: BSV) => <EventCard key={ev.id} event={ev} />)}
+        {events.map((ev: import("@/types").EquiEvent) => <EventCard key={ev.id} event={ev} />)}
       </div>
     </div>
   );
