@@ -1,7 +1,7 @@
 import { getEvents } from "@/lib/data/events";
 import EventCard from "@/components/events/EventCard";
 import Link from "next/link";
-import { BSV } from "@/types";
+import { BSV } from "@/types/company";
 
 import { Plus, Calendar, Settings2 } from "lucide-react";
 
