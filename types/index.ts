@@ -184,3 +184,6 @@ export interface CheckInStats {
 }
 
 export * from "./rider";
+
+// Company name constant for use in app
+export const BSV = "BSV";
