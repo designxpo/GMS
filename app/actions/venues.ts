@@ -20,7 +20,7 @@ export async function createVenue(formData: any) {
     },
   });
 
-  revalidatePath("/(admin)/venues", "page");
+  revalidatePath("/venues");
   return data;
 }
 
@@ -34,7 +34,7 @@ export async function updateVenue(id: string, formData: any) {
     data: formData,
   });
 
-  revalidatePath("/(admin)/venues", "page");
+  revalidatePath("/venues");
   return data;
 }
 
@@ -48,14 +48,13 @@ export async function deleteVenue(id: string) {
     where: { id, tenantId },
   });
 
-  revalidatePath("/(admin)/venues", "page");
+  revalidatePath("/venues");
   return { success: true };
 }
 
 export async function createRing(venueId: string, name: string) {
     const session = await getServerSession();
     if (!session) throw new Error("Unauthorized");
-    const tenantId = session.user.tenantId;
 
     const ring = await prisma.ring.create({
         data: {
@@ -64,6 +63,6 @@ export async function createRing(venueId: string, name: string) {
         }
     });
 
-    revalidatePath("/(admin)/venues", "page");
+    revalidatePath("/venues");
     return ring;
 }

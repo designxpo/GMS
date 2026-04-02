@@ -5,7 +5,8 @@ export interface User {
   id: string;
   tenantId: string;
   role: Role;
-  // add other fields as needed
+  name?: string;
+  email?: string;
 }
 
 export interface ApiResponse<T> {

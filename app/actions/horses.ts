@@ -15,7 +15,7 @@ export async function createHorse(formData: any) {
     },
   });
 
-  revalidatePath("/(admin)/horses", "page");
+  revalidatePath("/horses");
   return data;
 }
 
@@ -29,7 +29,7 @@ export async function updateHorse(id: string, formData: any) {
     data: formData,
   });
 
-  revalidatePath("/(admin)/horses", "page");
+  revalidatePath("/horses");
   return data;
 }
 
@@ -42,6 +42,6 @@ export async function deleteHorse(id: string) {
     where: { id, tenantId },
   });
 
-  revalidatePath("/(admin)/horses", "page");
+  revalidatePath("/horses");
   return { success: true };
 }

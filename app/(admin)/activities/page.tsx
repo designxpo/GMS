@@ -1,7 +1,5 @@
-import { Suspense } from "react";
 import { getActivities } from "@/lib/data/activities";
-import { TableSkeleton } from "@/components/ui/Skeletons";
-import { Plus, Search, Layers, Activity as ActivityIcon, ChevronRight } from "lucide-react";
+import { Plus, Layers, Activity as ActivityIcon, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = { title: "Activities — BSV" };
@@ -18,10 +16,10 @@ export default async function ActivitiesPage() {
           <p className="text-sm text-slate-500 font-medium mt-0.5 tracking-wide">Global Discipline & Activity Templates</p>
         </div>
         <div className="flex gap-3">
-          <button className="px-5 py-2.5 text-sm font-bold bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-95 flex items-center gap-2">
+          <Link href="/activities/new" className="px-5 py-2.5 text-sm font-bold bg-[#4338ca] hover:bg-[#3730a3] text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all active:scale-95 flex items-center gap-2">
             <Plus size={18} />
             <span>Create Activity</span>
-          </button>
+          </Link>
         </div>
       </div>
 

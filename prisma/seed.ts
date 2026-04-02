@@ -1,6 +1,12 @@
 import { PrismaClient } from "@prisma/client";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
+
+const SECRET = process.env.NEXTAUTH_SECRET ?? "gms-fallback-secret-change-in-prod";
+function hashPassword(password: string): string {
+  return crypto.createHmac("sha256", SECRET).update(password).digest("hex");
+}
 
 async function main() {
   console.log("Starting full-platform seeding...");
@@ -19,11 +25,12 @@ async function main() {
 
   const admin = await prisma.user.upsert({
     where: { id: "demo-admin-id" },
-    update: {},
+    update: { hashedPassword: hashPassword("Admin@123") },
     create: {
       id: "demo-admin-id",
       email: "admin@equievent.com",
       name: "Super Admin",
+      hashedPassword: hashPassword("Admin@123"),
       role: "SUPER_ADMIN",
       tenantId: tenant.id,
     },

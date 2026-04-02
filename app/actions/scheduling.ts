@@ -6,13 +6,12 @@ import { revalidatePath } from "next/cache";
 export async function createScheduleSlot(formData: any) {
   const session = await getServerSession();
   if (!session) throw new Error("Unauthorized");
-  const tenantId = session.user.tenantId;
 
-  // Conflict detection logic (Simplified)
+  // Conflict detection: check for overlapping slots in the same ring
   const existing = await prisma.scheduleSlot.findFirst({
     where: {
       eventId: formData.eventId,
-      ringId: formData.ringId,
+      ...(formData.ringId ? { ringId: formData.ringId } : {}),
       startTime: { lte: formData.endTime },
       endTime: { gte: formData.startTime },
     },
@@ -25,19 +24,15 @@ export async function createScheduleSlot(formData: any) {
     },
   });
 
-  revalidatePath("/(admin)/scheduling", "page");
+  revalidatePath("/scheduling");
   return slot;
 }
 
 export async function deleteScheduleSlot(id: string) {
   const session = await getServerSession();
   if (!session) throw new Error("Unauthorized");
-  const tenantId = session.user.tenantId;
 
-  await prisma.scheduleSlot.delete({
-    where: { id },
-  });
-
-  revalidatePath("/(admin)/scheduling", "page");
+  await prisma.scheduleSlot.delete({ where: { id } });
+  revalidatePath("/scheduling");
   return { success: true };
 }

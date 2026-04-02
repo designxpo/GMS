@@ -1,18 +1,22 @@
 // components/layout/TopBar.tsx
 "use client";
 import { User } from "@/types";
-import { Bell, Search, Globe, ChevronDown } from "lucide-react";
+import { Bell, Search, Globe, ChevronDown, LogOut } from "lucide-react";
+import { logout } from "@/app/actions/auth";
+import { useState } from "react";
 
 export default function TopBar({ user }: { user: User }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <header className="bg-white border-b border-slate-200 px-8 py-3.5 z-10">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2 text-slate-400 focus-within:text-indigo-600 transition-colors">
             <Search size={18} />
-            <input 
-              type="search" 
-              placeholder="Search Intelligence..." 
+            <input
+              type="search"
+              placeholder="Search Intelligence..."
               className="bg-transparent border-none focus:ring-0 text-sm font-medium w-64 placeholder:text-slate-400 text-slate-900"
             />
           </div>
@@ -28,18 +32,44 @@ export default function TopBar({ user }: { user: User }) {
             <Bell size={20} />
             <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
           </button>
-          
+
           <div className="h-6 w-[1px] bg-slate-200" />
 
-          <div className="flex items-center gap-3 pl-2 group cursor-pointer">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-black text-slate-900 leading-none">{user.role}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">Verified Official</p>
-            </div>
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-slate-800 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-200 group-hover:scale-105 transition-transform">
-              {user.role[0]}
-            </div>
-            <ChevronDown size={16} className="text-slate-400 group-hover:text-indigo-600 transition-colors" />
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              className="flex items-center gap-3 pl-2 group cursor-pointer"
+            >
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-black text-slate-900 leading-none">{user.name ?? user.role}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mt-1">{user.email ?? "Verified Official"}</p>
+              </div>
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-slate-800 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-lg shadow-indigo-200 group-hover:scale-105 transition-transform">
+                {(user.name ?? user.role)[0].toUpperCase()}
+              </div>
+              <ChevronDown size={16} className={`text-slate-400 group-hover:text-indigo-600 transition-all ${menuOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-2xl shadow-xl shadow-slate-200/60 z-20 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-xs font-black text-slate-900 truncate">{user.name ?? user.role}</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{user.role}</p>
+                  </div>
+                  <form action={logout}>
+                    <button
+                      type="submit"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                      <LogOut size={16} />
+                      Sign Out
+                    </button>
+                  </form>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

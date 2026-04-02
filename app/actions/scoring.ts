@@ -8,10 +8,18 @@ import { SubmitScoreDto } from "@/types";
 export async function submitScore(dto: SubmitScoreDto) {
   const session = await getServerSession();
 
-  const assignment = await prisma.judgeAssignment.findFirst({
-    where: { userId: session!.user.id, eventId: { in: [] } },
+  // Find the activity to get the eventId
+  const activityRecord = await prisma.eventActivity.findUnique({
+    where: { id: dto.eventActivityId },
   });
-  if (!assignment) return { error: "Not assigned as judge for this event" };
+  if (!activityRecord) return { error: "Activity not found" };
+
+  const assignment = await prisma.judgeAssignment.findFirst({
+    where: { userId: session!.user.id, eventId: activityRecord.eventId, activityId: dto.eventActivityId },
+  });
+  // Allow SUPER_ADMIN and TENANT_ADMIN to submit scores even without a judge assignment
+  const allowedWithoutAssignment = ["SUPER_ADMIN", "TENANT_ADMIN"].includes(session!.user.role);
+  if (!assignment && !allowedWithoutAssignment) return { error: "Not assigned as judge for this event" };
 
   const activity = await prisma.eventActivity.findUnique({
     where: { id: dto.eventActivityId },
@@ -23,18 +31,43 @@ export async function submitScore(dto: SubmitScoreDto) {
   const maxTotal = criteria.reduce((sum, c) => sum + c.maxScore, 0);
   const percentage = (total / maxTotal) * 100;
 
+  // For admins without a formal assignment, we need a real assignment record
+  // Create one on-the-fly if needed
+  let resolvedAssignment = assignment;
+  if (!resolvedAssignment && allowedWithoutAssignment) {
+    resolvedAssignment = await prisma.judgeAssignment.upsert({
+      where: { id: `admin-${session!.user.id}-${dto.eventActivityId}` },
+      update: {},
+      create: {
+        id: `admin-${session!.user.id}-${dto.eventActivityId}`,
+        eventId: activityRecord.eventId,
+        userId: session!.user.id,
+        activityId: dto.eventActivityId,
+      },
+    }).catch(async () =>
+      prisma.judgeAssignment.create({
+        data: {
+          eventId: activityRecord.eventId,
+          userId: session!.user.id,
+          activityId: dto.eventActivityId,
+        },
+      })
+    );
+  }
+  if (!resolvedAssignment) return { error: "Could not resolve judge assignment" };
+
   // Tamper-proof hash
   const scoreHash = crypto
     .createHash("sha256")
-    .update(JSON.stringify({ slotId: dto.scheduleSlotId, scores: dto.criteriaScores, judgeId: assignment.id, ts: new Date().toISOString() }))
+    .update(JSON.stringify({ slotId: dto.scheduleSlotId, scores: dto.criteriaScores, judgeId: resolvedAssignment.id, ts: new Date().toISOString() }))
     .digest("hex");
 
   const score = await prisma.score.upsert({
-    where: { scheduleSlotId_judgeAssignmentId: { scheduleSlotId: dto.scheduleSlotId, judgeAssignmentId: assignment.id } },
+    where: { scheduleSlotId_judgeAssignmentId: { scheduleSlotId: dto.scheduleSlotId, judgeAssignmentId: resolvedAssignment.id } },
     create: {
       scheduleSlotId: dto.scheduleSlotId,
       eventActivityId: dto.eventActivityId,
-      judgeAssignmentId: assignment.id,
+      judgeAssignmentId: resolvedAssignment.id,
       criteriaScores: dto.criteriaScores,
       totalScore: total,
       percentage,

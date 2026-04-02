@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getServerSession } from "@/lib/auth/session";
 import { ShieldCheck, User, QrCode, Search, Filter, MoreHorizontal, CheckCircle2, AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 export const metadata = { title: "Accreditation — BSV" };
 
@@ -29,7 +30,7 @@ export default async function AccreditationPage() {
           </div>
         </div>
         <div className="flex gap-3">
-          <button className="px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition-all active:scale-95">Issue Badge</button>
+          <Link href="/accreditation/new" className="px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-600/30 transition-all active:scale-95">Issue Badge</Link>
         </div>
       </div>
 
