@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getServerSession } from "@/lib/auth/session";
-import { EventWizardDraft, CreateEventDto } from "@/types";
+import { EventWizardDraft } from "@/types";
 import { writeAuditLog } from "@/lib/audit";
 
 // Save wizard draft — called on every step change
@@ -28,11 +28,11 @@ export async function publishEvent(eventId: string) {
   const session = await getServerSession();
   const tenantId = session!.user.tenantId;
 
-  // Block if conflicts exist
+  // Block if conflicts exist (UI also disables the button, this is a server-side guard)
   const conflicts = await prisma.scheduleSlot.count({ where: { eventId, hasConflict: true } });
-  if (conflicts > 0) return { error: `Cannot publish — ${conflicts} scheduling conflicts must be resolved first` };
+  if (conflicts > 0) return;
 
-  const event = await prisma.event.update({
+  await prisma.event.update({
     where: { id: eventId, tenantId },
     data: { status: "SCHEDULED", isPublic: true },
   });
