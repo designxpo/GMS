@@ -2,7 +2,7 @@
 import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import { createHorse } from "@/app/actions/horses";
-import { ArrowLeft, Horse } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -49,7 +49,7 @@ export default function NewHorsePage() {
         </Link>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md">
-            <Horse size={20} />
+            <Shield size={20} />
           </div>
           <div>
             <h1 className="text-xl font-black text-slate-900 tracking-tight">Register New Horse</h1>

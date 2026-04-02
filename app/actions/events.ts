@@ -50,7 +50,7 @@ export async function cloneEvent(sourceEventId: string) {
     where: { id: sourceEventId },
     include: { activities: true },
   });
-  if (!source) return { error: "Event not found" };
+  if (!source) { revalidatePath("/events"); return; }
 
   const clone = await prisma.event.create({
     data: {
